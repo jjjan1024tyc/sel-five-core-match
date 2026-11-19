@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEL 五大核心配對</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #d7dce6;
+    --accent: #3b6ef5;
+    --ok: #16a34a;
+    --bad: #dc2626;
+    --star: #f5b301;
+    --c1: #e85d75; --c1s: #fde8ec;
+    --c2: #f08a24; --c2s: #fef0e1;
+    --c3: #2f9e6e; --c3s: #e3f5ec;
+    --c4: #3b6ef5; --c4s: #e6edfe;
+    --c5: #8b5cf6; --c5s: #efe9fe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+    font-size: 18px; line-height: 1.6;
+  }
+  header { padding: 18px 16px 6px; text-align: center; }
+  h1 { margin: 0; font-size: 28px; }
+  .sub { color: var(--muted); font-size: 16px; margin-top: 2px; }
+
+  .levels {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+    max-width: 1200px; margin: 14px auto 0; padding: 0 16px;
+  }
+  .lvl {
+    border: 2px solid var(--line); background: var(--panel); color: var(--ink);
+    border-radius: 14px; padding: 10px 6px; cursor: pointer; font: inherit;
+    font-size: 18px; font-weight: 700; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; transition: transform .1s, border-color .15s;
+    min-height: 76px; justify-content: center;
+  }
+  .lvl:hover { transform: translateY(-2px); }
+  .lvl.active { border-color: var(--accent); box-shadow: 0 0 0 3px #3b6ef533; }
+  .lvl.done { background: #e9f9ef; border-color: var(--ok); }
+  .lvl .st { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .lvl.done .st { color: var(--ok); }
+  .lvl .stars { color: var(--star); letter-spacing: 2px; font-size: 15px; }
+
+  .bar {
+    max-width: 1200px; margin: 14px auto 0; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .bar .info { flex: 1; font-size: 17px; color: var(--muted); min-width: 220px; }
+  .bar .info b { color: var(--ink); }
+  .btn {
+    font: inherit; font-size: 16px; font-weight: 700; padding: 9px 16px;
+    border-radius: 10px; border: 2px solid var(--line); background: var(--panel);
+    color: var(--ink); cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  main {
+    max-width: 1200px; margin: 12px auto 40px; padding: 0 16px;
+    display: grid; grid-template-columns: minmax(180px, 260px) 1fr; gap: 18px;
+  }
+  .col { display: flex; flex-direction: column; gap: 12px; }
+  #left { position: sticky; top: 10px; align-self: start; }
+  .colhead { font-size: 15px; color: var(--muted); font-weight: 700; }
+
+  .card {
+    background: var(--panel); border: 2px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; cursor: pointer; user-select: none; position: relative;
+    transition: transform .1s, border-color .15s, background .15s, box-shadow .15s;
+  }
+  .card:hover:not(.matched) { border-color: #9fb3e8; }
+  .ability { font-size: 21px; font-weight: 800; display: flex; align-items: center; gap: 10px; min-height: 64px; }
+  .ability .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; background: var(--c); }
+  .item { font-size: 18px; }
+  .card.sel { border-color: var(--accent); box-shadow: 0 0 0 4px #3b6ef544; transform: scale(1.02); }
+  .card.matched { cursor: default; border-color: var(--c); background: var(--cs); }
+  .card.matched.ability::after { content: "✔"; margin-left: auto; color: var(--c); font-size: 22px; }
+  .tag {
+    display: inline-block; font-size: 14px; font-weight: 700; color: #fff; background: var(--c);
+    border-radius: 999px; padding: 1px 10px; margin-bottom: 6px;
+  }
+  .label { font-weight: 800; color: var(--c); }
+  .card.wrong { border-color: var(--bad); animation: shake .4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
+  }
+  .card.pop { animation: pop .35s; }
+  @keyframes pop { 50% { transform: scale(1.05); } }
+
+  .overlay {
+    position: fixed; inset: 0; background: #0f172a99; display: none;
+    align-items: center; justify-content: center; z-index: 20; padding: 16px;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--panel); border-radius: 20px; padding: 28px 30px; text-align: center;
+    max-width: 440px; width: 100%; box-shadow: 0 20px 50px #0005; animation: pop .4s;
+  }
+  .modal h2 { margin: 0 0 6px; font-size: 30px; }
+  .modal .big { font-size: 46px; color: var(--star); letter-spacing: 6px; margin: 6px 0; }
+  .modal .big .off { color: #d9dde5; }
+  .modal p { margin: 6px 0 18px; color: var(--muted); }
+  .modal .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding-bottom: 24px; }
+  .linkbtn { background: none; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; }
+
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    .levels { grid-template-columns: repeat(3, 1fr); }
+    main { grid-template-columns: 1fr 1.6fr; gap: 10px; }
+    .ability { font-size: 17px; min-height: 54px; }
+    .item { font-size: 16px; }
+    .card { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>認識 SEL 五大核心｜配對挑戰</h1>
+  <div class="sub">先點左邊的「核心能力」，再點右邊對應的內容卡</div>
+</header>
+
+<nav class="levels" id="levels"></nav>
+
+<div class="bar">
+  <div class="info" id="info"></div>
+  <button class="btn" id="replay">↻ 重玩本關</button>
+</div>
+
+<main>
+  <div class="col" id="left"><div class="colhead">核心能力</div></div>
+  <div class="col" id="right"><div class="colhead" id="rightHead"></div></div>
+</main>
+
+<footer><button class="linkbtn" id="resetAll">清除所有過關紀錄</button></footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="mTitle">過關！</h2>
+    <div class="big" id="mStars"></div>
+    <p id="mText"></p>
+    <div class="row" id="mBtns"></div>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+const ABILITIES = [
+  { name: "自我覺察", color: 1 },
+  { name: "自我管理", color: 2 },
+  { name: "社會覺察", color: 3 },
+  { name: "人際技巧", color: 4 },
+  { name: "負責任的決策", color: 5 },
+];
+const LEVELS = [
+  { title: "一句話口訣", items: ["我懂我自己", "我管得住自己", "我懂別人的感受", "我會跟人合作溝通", "我為選擇負責"] },
+  { title: "關鍵動作", items: ["辨識情緒、認識優缺點", "情緒煞車、抗壓自律", "換位思考、尊重差異", "好好說話、化解衝突", "評估後果、做對的事"] },
+  { title: "白話定義", items: [
+    "像幫大腦裝上「情緒雷達」，能精準叫出自己現在的情緒名字，知道自己為什麼生氣或難過，也清楚自己的優缺點與底線。",
+    "情緒來了沒關係，重點是你能踩煞車、轉方向盤。包含控制衝動、排解壓力，以及為了達成目標而自律。",
+    "「同理心」與「讀空氣」的能力。能站在別人的角度想事情，理解每個人的家庭背景、個性與文化都不同，懂得尊重差異。",
+    "懂得如何清楚表達自己的想法、專心聽別人說話、跟隊友分工合作，以及在吵架時好好溝通、不冷戰也不霸凌。",
+    "做任何選擇前，先在腦中模擬「這樣做會發生什麼事？對自己和別人安全嗎？符合道德與校規嗎？」，並且願意為自己的選擇負責。",
+  ] },
+  { title: "日常情境1", items: [
+    "分辨情緒： 段考數學考砸時，你不會只覺得「好煩、想摔筆」，而是能察覺：「我現在其實不是生老師的氣，我是對自己粗心感到懊惱，還有點害怕回家被唸。」",
+    "情緒降溫： 在班群或 IG 看到有人發限動暗酸自己，氣到想立刻留言開戰時，先放下手機深呼吸 10 秒、去喝口水，等冷靜後再決定怎麼處理，不讓一時衝動留下黑歷史。",
+    "換位思考： 平常愛開玩笑的同學今天突然趴在桌上不說話，你不會硬去鬧他，而是察覺他可能心情低落或遇到困難，給予安靜的空間或低調關心。",
+    "有效溝通（我訊息）： 合作做報告時，組員一直滑手機不做事，你不是罵他「你很廢、都你在擺爛」，而是說：「我覺得有點著急，因為明天就要交了，我希望我們現在一起把最後兩頁做完。」",
+    "網路行為評估： 收到同學傳來的搞笑醜照或八卦截圖，在按下「轉發」前先想一下：「如果主角是我，我會怎麼想？這會不會變成網路霸凌？」，最後決定不轉傳並提醒朋友。",
+  ] },
+  { title: "日常情境2", items: [
+    "認識優劣勢： 資訊課分組做專題時，你知道自己「程式邏輯強，但上台報告會緊張」，因此能主動提出負責寫程式的部分。",
+    "自律與抗壓： 距離會考或大隊接力比賽還有一個月，雖然很想打手遊，但能幫自己排定每天 30 分鐘的複習或體能練習計畫並確實做到。",
+    "尊重差異： 班上有轉學生、特殊生，或習慣與大家不同的同學時，不會跟著起鬨嘲笑，而是理解每個人都有自己的步調。",
+    "拒絕同儕壓力： 朋友起鬨要一起翹課或抽電子煙時，你能堅定且不傷和氣地拒絕：「這我不行，但我等下放學可以陪你們去打球。」",
+    "誠實面對錯誤： 不小心打破教室的玻璃或弄壞公用器材，雖然很怕被罵，但評估隱瞞會造成別人受傷或更嚴重的誤會，決定主動向老師報告並討論賠償或善後方式。",
+  ] },
+];
+const STORE_KEY = "sel5-match-progress-v1";
+
+// 拆出情境前面的小標題（例：「分辨情緒：」），遊戲中先隱藏
+function splitLabel(text) {
+  const m = text.match(/^([^：「」]{2,14})：\s*(.*)$/s);
+  return m ? { label: m[1], body: m[2] } : { label: "", body: text };
+}
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveProgress(p) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); } catch (e) {}
+}
+function shuffle(a) {
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function starsFor(mistakes) { return mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1; }
+function starText(n) { return "★".repeat(n) + "☆".repeat(3 - n); }
+
+let progress = loadProgress();     // { "0": 3, "2": 1, ... } 每關最佳星等
+let current = 0;
+let state;                          // { matched:Set, mistakes, selLeft }
+
+const $ = (id) => document.getElementById(id);
+
+function renderLevels() {
+  const nav = $("levels");
+  nav.innerHTML = "";
+  LEVELS.forEach((lv, i) => {
+    const b = document.createElement("button");
+    const best = progress[i];
+    b.className = "lvl" + (i === current ? " active" : "") + (best ? " done" : "");
+    b.innerHTML = `<span>${lv.title}</span>` +
+      (best ? `<span class="st">✅ 過關</span><span class="stars">${starText(best)}</span>`
+            : `<span class="st">第 ${i + 1} 關</span>`);
+    b.onclick = () => startLevel(i);
+    nav.appendChild(b);
+  });
+}
+
+function renderInfo() {
+  const lv = LEVELS[current];
+  $("info").innerHTML = `第 ${current + 1} 關：<b>${lv.title}</b>｜已配對 <b>${state.matched.size}</b> / 5｜錯誤 <b>${state.mistakes}</b> 次`;
+}
+
+function startLevel(i) {
+  current = i;
+  state = { matched: new Set(), mistakes: 0, selLeft: null };
+  const lv = LEVELS[i];
+  const isScenario = lv.title.startsWith("日常情境");
+
+  const left = $("left"), right = $("right");
+  left.querySelectorAll(".card").forEach(n => n.remove());
+  right.querySelectorAll(".card").forEach(n => n.remove());
+  $("rightHead").textContent = lv.title;
+
+  ABILITIES.forEach((ab, idx) => {
+    const c = document.createElement("div");
+    c.className = "card ability";
+    c.style.setProperty("--c", `var(--c${ab.color})`);
+    c.style.setProperty("--cs", `var(--c${ab.color}s)`);
+    c.innerHTML = `<span class="dot"></span><span>${ab.name}</span>`;
+    c.dataset.idx = idx;
+    c.onclick = () => clickLeft(c);
+    left.appendChild(c);
+  });
+
+  shuffle(lv.items.map((t, idx) => ({ t, idx }))).forEach(({ t, idx }) => {
+    const c = document.createElement("div");
+    c.className = "card item";
+    c.dataset.idx = idx;
+    const parts = isScenario ? splitLabel(t) : { label: "", body: t };
+    c.dataset.label = parts.label;
+    c.innerHTML = `<div class="body">${parts.body}</div>`;
+    c.onclick = () => clickRight(c);
+    right.appendChild(c);
+  });
+
+  renderLevels();
+  renderInfo();
+}
+
+function clickLeft(c) {
+  if (c.classList.contains("matched")) return;
+  document.querySelectorAll("#left .card.sel").forEach(n => n.classList.remove("sel"));
+  if (state.selLeft === c) { state.selLeft = null; return; }
+  state.selLeft = c;
+  c.classList.add("sel");
+}
+
+function clickRight(c) {
+  if (c.classList.contains("matched")) return;
+  if (!state.selLeft) {
+    // 尚未選左邊：提示一下
+    const first = document.querySelector("#left .card:not(.matched)");
+    if (first) flash(first, "pop");
+    return;
+  }
+  const L = state.selLeft;
+  if (L.dataset.idx === c.dataset.idx) {
+    const ab = ABILITIES[+L.dataset.idx];
+    [L, c].forEach(n => {
+      n.classList.remove("sel");
+      n.classList.add("matched");
+      n.style.setProperty("--c", `var(--c${ab.color})`);
+      n.style.setProperty("--cs", `var(--c${ab.color}s)`);
+      flash(n, "pop");
+    });
+    const label = c.dataset.label;
+    c.innerHTML = `<span class="tag">${ab.name}</span><div class="body">` +
+      (label ? `<span class="label">${label}：</span>` : "") + c.querySelector(".body").innerHTML + `</div>`;
+    state.matched.add(+L.dataset.idx);
+    state.selLeft = null;
+    renderInfo();
+    if (state.matched.size === 5) setTimeout(levelComplete, 450);
+  } else {
+    state.mistakes++;
+    flash(c, "wrong");
+    flash(L, "wrong");
+    L.classList.remove("sel");
+    state.selLeft = null;
+    renderInfo();
+  }
+}
+
+function flash(n, cls) {
+  n.classList.remove(cls);
+  void n.offsetWidth;
+  n.classList.add(cls);
+  setTimeout(() => n.classList.remove(cls), 450);
+}
+
+function levelComplete() {
+  const s = starsFor(state.mistakes);
+  const wasAllDone = LEVELS.every((_, i) => progress[i]);
+  progress[current] = Math.max(progress[current] || 0, s);
+  saveProgress(progress);
+  renderLevels();
+
+  const allDone = LEVELS.every((_, i) => progress[i]);
+  const next = LEVELS.findIndex((_, i) => !progress[i]);
+  const btns = [];
+  btns.push(`<button class="btn" data-act="replay">↻ 重玩本關</button>`);
+
+  if (allDone && !wasAllDone) {
+    $("mTitle").textContent = "🎉 全部過關！";
+    $("mText").innerHTML = `你已完成 SEL 五大核心全部 5 關！<br>總星數：<b>${totalStars()}</b> / 15`;
+    btns.push(`<button class="btn primary" data-act="close">太棒了</button>`);
+    confetti(4500);
+  } else {
+    $("mTitle").textContent = "過關！";
+    $("mText").innerHTML = `「${LEVELS[current].title}」錯誤 ${state.mistakes} 次` +
+      (s < 3 ? "<br>零失誤可以拿到三顆星喔！" : "<br>零失誤，完美！");
+    if (next >= 0) btns.push(`<button class="btn primary" data-act="go" data-i="${next}">下一關：${LEVELS[next].title} →</button>`);
+    else btns.push(`<button class="btn primary" data-act="close">好</button>`);
+    confetti(1800);
+  }
+  $("mStars").innerHTML = "★".repeat(s) + `<span class="off">${"★".repeat(3 - s)}</span>`;
+  $("mBtns").innerHTML = btns.join("");
+  $("overlay").classList.add("show");
+}
+
+function totalStars() { return LEVELS.reduce((a, _, i) => a + (progress[i] || 0), 0); }
+
+$("mBtns").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  $("overlay").classList.remove("show");
+  if (b.dataset.act === "replay") startLevel(current);
+  if (b.dataset.act === "go") startLevel(+b.dataset.i);
+});
+$("replay").onclick = () => startLevel(current);
+$("resetAll").onclick = () => {
+  if (!confirm("確定要清除所有過關紀錄嗎？")) return;
+  progress = {};
+  saveProgress(progress);
+  startLevel(0);
+};
+
+// 簡易彩帶特效
+function confetti(ms) {
+  const cv = $("confetti"), ctx = cv.getContext("2d");
+  const W = cv.width = innerWidth, H = cv.height = innerHeight;
+  const colors = ["#e85d75", "#f08a24", "#2f9e6e", "#3b6ef5", "#8b5cf6", "#f5b301"];
+  const ps = Array.from({ length: 160 }, () => ({
+    x: Math.random() * W, y: -20 - Math.random() * H * 0.5,
+    vx: (Math.random() - 0.5) * 3, vy: 2 + Math.random() * 3,
+    s: 6 + Math.random() * 6, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+    c: colors[Math.floor(Math.random() * colors.length)],
+  }));
+  const end = performance.now() + ms;
+  (function tick(t) {
+    ctx.clearRect(0, 0, W, H);
+    ps.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      if (p.y > H + 20 && t < end) { p.y = -20; p.x = Math.random() * W; }
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
+    });
+    if (t < end || ps.some(p => p.y < H + 20)) requestAnimationFrame(tick);
+    else ctx.clearRect(0, 0, W, H);
+  })(performance.now());
+}
+
+startLevel(Math.max(0, LEVELS.findIndex((_, i) => !progress[i])));
+</script>
+</body>
+</html>
