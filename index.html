@@ -25,81 +25,103 @@
   body {
     margin: 0; background: var(--bg); color: var(--ink);
     font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
-    font-size: 18px; line-height: 1.6;
+    font-size: 17px; line-height: 1.6;
   }
-  header { padding: 18px 16px 6px; text-align: center; }
+  header { padding: 16px 16px 4px; text-align: center; }
   h1 { margin: 0; font-size: 28px; }
   .sub { color: var(--muted); font-size: 16px; margin-top: 2px; }
 
-  .levels {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-    max-width: 1200px; margin: 14px auto 0; padding: 0 16px;
+  .layout {
+    max-width: 1400px; margin: 14px auto 30px; padding: 0 16px;
+    display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: start;
   }
+
+  /* 左側關卡 */
+  aside { position: sticky; top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .asidehead { font-size: 15px; color: var(--muted); font-weight: 700; }
   .lvl {
     border: 2px solid var(--line); background: var(--panel); color: var(--ink);
-    border-radius: 14px; padding: 10px 6px; cursor: pointer; font: inherit;
+    border-radius: 14px; padding: 10px 8px; cursor: pointer; font: inherit;
     font-size: 18px; font-weight: 700; display: flex; flex-direction: column;
-    align-items: center; gap: 2px; transition: transform .1s, border-color .15s;
-    min-height: 76px; justify-content: center;
+    align-items: center; gap: 0; transition: transform .1s, border-color .15s;
   }
-  .lvl:hover { transform: translateY(-2px); }
+  .lvl:hover { transform: translateX(3px); }
   .lvl.active { border-color: var(--accent); box-shadow: 0 0 0 3px #3b6ef533; }
   .lvl.done { background: #e9f9ef; border-color: var(--ok); }
-  .lvl .st { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .lvl.done.active { border-color: var(--accent); }
+  .lvl .st { font-size: 14px; font-weight: 600; color: var(--muted); }
   .lvl.done .st { color: var(--ok); }
-  .lvl .stars { color: var(--star); letter-spacing: 2px; font-size: 15px; }
-
-  .bar {
-    max-width: 1200px; margin: 14px auto 0; padding: 0 16px;
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  }
-  .bar .info { flex: 1; font-size: 17px; color: var(--muted); min-width: 220px; }
-  .bar .info b { color: var(--ink); }
+  .lvl .stars { color: var(--star); letter-spacing: 2px; font-size: 14px; }
   .btn {
-    font: inherit; font-size: 16px; font-weight: 700; padding: 9px 16px;
+    font: inherit; font-size: 16px; font-weight: 700; padding: 9px 12px;
     border-radius: 10px; border: 2px solid var(--line); background: var(--panel);
     color: var(--ink); cursor: pointer;
   }
   .btn:hover { border-color: var(--accent); }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  main {
-    max-width: 1200px; margin: 12px auto 40px; padding: 0 16px;
-    display: grid; grid-template-columns: minmax(180px, 260px) 1fr; gap: 18px;
+  /* 上方核心能力（放置區） */
+  .slots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .slot {
+    background: var(--panel); border: 2px solid var(--line); border-radius: 14px;
+    padding: 10px; display: flex; flex-direction: column; gap: 8px; cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, background .15s;
   }
-  .col { display: flex; flex-direction: column; gap: 12px; }
-  #left { position: sticky; top: 10px; align-self: start; }
-  .colhead { font-size: 15px; color: var(--muted); font-weight: 700; }
+  .slot .name {
+    font-size: 20px; font-weight: 800; text-align: center; color: #fff;
+    background: var(--c); border-radius: 10px; padding: 6px 4px; line-height: 1.3;
+  }
+  .slot .drop {
+    flex: 1; min-height: 110px; border: 2px dashed var(--line); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #a3aab8; font-size: 15px; text-align: center; padding: 6px;
+  }
+  .slot.hover { border-color: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 30%, transparent); }
+  .slot.hover .drop { border-color: var(--c); background: var(--cs); color: var(--c); }
+  .slot.filled { cursor: default; border-color: var(--c); background: var(--cs); }
+  .slot.filled .drop { border: none; padding: 0; display: block; }
+  .slot.wrong { border-color: var(--bad); animation: shake .4s; }
 
+  .info { margin: 16px 0 10px; font-size: 17px; color: var(--muted); }
+  .info b { color: var(--ink); }
+
+  /* 下方選項 */
+  .pool { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: start; min-height: 60px; }
   .card {
     background: var(--panel); border: 2px solid var(--line); border-radius: 14px;
-    padding: 14px 16px; cursor: pointer; user-select: none; position: relative;
-    transition: transform .1s, border-color .15s, background .15s, box-shadow .15s;
+    padding: 12px 14px; cursor: grab; user-select: none; -webkit-user-select: none;
+    color: var(--ink); text-align: left; font-size: 17px;
+    touch-action: none; transition: border-color .15s, box-shadow .15s, transform .1s;
+    box-shadow: 0 2px 0 #0000000d;
   }
-  .card:hover:not(.matched) { border-color: #9fb3e8; }
-  .ability { font-size: 21px; font-weight: 800; display: flex; align-items: center; gap: 10px; min-height: 64px; }
-  .ability .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; background: var(--c); }
-  .item { font-size: 18px; }
-  .card.sel { border-color: var(--accent); box-shadow: 0 0 0 4px #3b6ef544; transform: scale(1.02); }
-  .card.matched { cursor: default; border-color: var(--c); background: var(--cs); }
-  .card.matched.ability::after { content: "✔"; margin-left: auto; color: var(--c); font-size: 22px; }
-  .tag {
-    display: inline-block; font-size: 14px; font-weight: 700; color: #fff; background: var(--c);
-    border-radius: 999px; padding: 1px 10px; margin-bottom: 6px;
-  }
-  .label { font-weight: 800; color: var(--c); }
+  .card:hover { border-color: #9fb3e8; }
+  .card.sel { border-color: var(--accent); box-shadow: 0 0 0 4px #3b6ef544; transform: translateY(-3px); }
+  .card.ghost { opacity: .3; }
   .card.wrong { border-color: var(--bad); animation: shake .4s; }
+  .card.matched {
+    cursor: default; touch-action: auto; background: var(--panel);
+    border-color: var(--c); box-shadow: none; padding: 10px 12px;
+  }
+  .card .label { font-weight: 800; color: var(--c); }
+  .card.big { font-size: 20px; font-weight: 700; text-align: center; }
+  .drag {
+    position: fixed; z-index: 50; pointer-events: none; margin: 0;
+    box-shadow: 0 12px 30px #0003; transform: rotate(2deg); cursor: grabbing;
+    border-color: var(--accent);
+  }
+  .pool .done-msg { grid-column: 1 / -1; text-align: center; color: var(--ok); font-weight: 700; }
+
   @keyframes shake {
     0%,100% { transform: translateX(0); }
     20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
     60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
   }
-  .card.pop { animation: pop .35s; }
+  .pop { animation: pop .35s; }
   @keyframes pop { 50% { transform: scale(1.05); } }
 
   .overlay {
     position: fixed; inset: 0; background: #0f172a99; display: none;
-    align-items: center; justify-content: center; z-index: 20; padding: 16px;
+    align-items: center; justify-content: center; z-index: 60; padding: 16px;
   }
   .overlay.show { display: flex; }
   .modal {
@@ -111,40 +133,53 @@
   .modal .big .off { color: #d9dde5; }
   .modal p { margin: 6px 0 18px; color: var(--muted); }
   .modal .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 70; }
 
-  footer { text-align: center; color: var(--muted); font-size: 14px; padding-bottom: 24px; }
-  .linkbtn { background: none; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; }
+  .linkbtn { background: none; border: none; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; font-size: 13px; padding: 0; }
 
-  @media (max-width: 760px) {
+  /* 平板 */
+  @media (max-width: 1024px) {
     body { font-size: 16px; }
-    .levels { grid-template-columns: repeat(3, 1fr); }
-    main { grid-template-columns: 1fr 1.6fr; gap: 10px; }
-    .ability { font-size: 17px; min-height: 54px; }
-    .item { font-size: 16px; }
-    .card { padding: 10px 12px; }
+    .layout { grid-template-columns: 112px 1fr; gap: 12px; }
+    .lvl { font-size: 15px; padding: 8px 4px; }
+    .slots { gap: 6px; }
+    .slot { padding: 6px; }
+    .slot .name { font-size: 15px; }
+    .slot .drop { min-height: 90px; font-size: 13px; }
+    .pool { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+    .card { font-size: 16px; }
+    .card.matched { padding: 6px 8px; font-size: 14px; }
+  }
+  /* 手機 */
+  @media (max-width: 600px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; flex-direction: row; flex-wrap: wrap; }
+    aside .lvl { flex: 1 1 30%; }
+    .asidehead { width: 100%; }
+    .slots { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
 <body>
 <header>
   <h1>認識 SEL 五大核心｜配對挑戰</h1>
-  <div class="sub">先點左邊的「核心能力」，再點右邊對應的內容卡</div>
+  <div class="sub">把下方的卡片拖到上方對應的核心能力；也可以先點卡片、再點能力</div>
 </header>
 
-<nav class="levels" id="levels"></nav>
+<div class="layout">
+  <aside>
+    <div class="asidehead">關卡</div>
+    <div id="levels" style="display:contents"></div>
+    <button class="btn" id="replay">↻ 重玩本關</button>
+    <button class="linkbtn" id="resetAll">清除所有過關紀錄</button>
+  </aside>
 
-<div class="bar">
-  <div class="info" id="info"></div>
-  <button class="btn" id="replay">↻ 重玩本關</button>
+  <main>
+    <div class="slots" id="slots"></div>
+    <div class="info" id="info"></div>
+    <div class="pool" id="pool"></div>
+  </main>
 </div>
-
-<main>
-  <div class="col" id="left"><div class="colhead">核心能力</div></div>
-  <div class="col" id="right"><div class="colhead" id="rightHead"></div></div>
-</main>
-
-<footer><button class="linkbtn" id="resetAll">清除所有過關紀錄</button></footer>
 
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -196,7 +231,6 @@ function splitLabel(text) {
   const m = text.match(/^([^：「」]{2,14})：\s*(.*)$/s);
   return m ? { label: m[1], body: m[2] } : { label: "", body: text };
 }
-
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; }
 }
@@ -210,16 +244,20 @@ function shuffle(a) {
 }
 function starsFor(mistakes) { return mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1; }
 function starText(n) { return "★".repeat(n) + "☆".repeat(3 - n); }
+function setColor(el, ab) {
+  el.style.setProperty("--c", `var(--c${ab.color})`);
+  el.style.setProperty("--cs", `var(--c${ab.color}s)`);
+}
 
-let progress = loadProgress();     // { "0": 3, "2": 1, ... } 每關最佳星等
+let progress = loadProgress();     // { "0": 3, ... } 每關最佳星等
 let current = 0;
-let state;                          // { matched:Set, mistakes, selLeft }
+let state;                          // { matched:Set, mistakes, selCard }
 
 const $ = (id) => document.getElementById(id);
 
 function renderLevels() {
-  const nav = $("levels");
-  nav.innerHTML = "";
+  const box = $("levels");
+  box.innerHTML = "";
   LEVELS.forEach((lv, i) => {
     const b = document.createElement("button");
     const best = progress[i];
@@ -228,91 +266,145 @@ function renderLevels() {
       (best ? `<span class="st">✅ 過關</span><span class="stars">${starText(best)}</span>`
             : `<span class="st">第 ${i + 1} 關</span>`);
     b.onclick = () => startLevel(i);
-    nav.appendChild(b);
+    box.appendChild(b);
   });
 }
 
 function renderInfo() {
-  const lv = LEVELS[current];
-  $("info").innerHTML = `第 ${current + 1} 關：<b>${lv.title}</b>｜已配對 <b>${state.matched.size}</b> / 5｜錯誤 <b>${state.mistakes}</b> 次`;
+  $("info").innerHTML = `第 ${current + 1} 關：<b>${LEVELS[current].title}</b>｜已配對 <b>${state.matched.size}</b> / 5｜錯誤 <b>${state.mistakes}</b> 次`;
 }
 
 function startLevel(i) {
   current = i;
-  state = { matched: new Set(), mistakes: 0, selLeft: null };
+  state = { matched: new Set(), mistakes: 0, selCard: null };
   const lv = LEVELS[i];
   const isScenario = lv.title.startsWith("日常情境");
+  const isShort = i <= 1;
 
-  const left = $("left"), right = $("right");
-  left.querySelectorAll(".card").forEach(n => n.remove());
-  right.querySelectorAll(".card").forEach(n => n.remove());
-  $("rightHead").textContent = lv.title;
+  const slots = $("slots"), pool = $("pool");
+  slots.innerHTML = "";
+  pool.innerHTML = "";
 
   ABILITIES.forEach((ab, idx) => {
-    const c = document.createElement("div");
-    c.className = "card ability";
-    c.style.setProperty("--c", `var(--c${ab.color})`);
-    c.style.setProperty("--cs", `var(--c${ab.color}s)`);
-    c.innerHTML = `<span class="dot"></span><span>${ab.name}</span>`;
-    c.dataset.idx = idx;
-    c.onclick = () => clickLeft(c);
-    left.appendChild(c);
+    const s = document.createElement("div");
+    s.className = "slot";
+    s.dataset.idx = idx;
+    setColor(s, ab);
+    s.innerHTML = `<div class="name">${ab.name}</div><div class="drop">拖到這裡</div>`;
+    s.onclick = () => { if (state.selCard) tryMatch(state.selCard, s); };
+    slots.appendChild(s);
   });
 
   shuffle(lv.items.map((t, idx) => ({ t, idx }))).forEach(({ t, idx }) => {
     const c = document.createElement("div");
-    c.className = "card item";
+    c.className = "card" + (isShort ? " big" : "");
     c.dataset.idx = idx;
     const parts = isScenario ? splitLabel(t) : { label: "", body: t };
     c.dataset.label = parts.label;
     c.innerHTML = `<div class="body">${parts.body}</div>`;
-    c.onclick = () => clickRight(c);
-    right.appendChild(c);
+    c.addEventListener("pointerdown", onPointerDown);
+    pool.appendChild(c);
   });
 
   renderLevels();
   renderInfo();
 }
 
-function clickLeft(c) {
-  if (c.classList.contains("matched")) return;
-  document.querySelectorAll("#left .card.sel").forEach(n => n.classList.remove("sel"));
-  if (state.selLeft === c) { state.selLeft = null; return; }
-  state.selLeft = c;
+/* ---------- 點選 ---------- */
+function selectCard(c) {
+  if (state.selCard === c) { c.classList.remove("sel"); state.selCard = null; return; }
+  if (state.selCard) state.selCard.classList.remove("sel");
+  state.selCard = c;
   c.classList.add("sel");
 }
 
-function clickRight(c) {
-  if (c.classList.contains("matched")) return;
-  if (!state.selLeft) {
-    // 尚未選左邊：提示一下
-    const first = document.querySelector("#left .card:not(.matched)");
-    if (first) flash(first, "pop");
-    return;
+/* ---------- 拖曳（Pointer Events：滑鼠、觸控都可用） ---------- */
+let drag = null;
+
+function onPointerDown(e) {
+  const c = e.currentTarget;
+  if (c.classList.contains("matched") || e.button > 0) return;
+  e.preventDefault();
+  const r = c.getBoundingClientRect();
+  drag = { card: c, startX: e.clientX, startY: e.clientY, dx: e.clientX - r.left, dy: e.clientY - r.top,
+           w: r.width, clone: null, over: null, id: e.pointerId };
+  document.addEventListener("pointermove", onPointerMove);
+  document.addEventListener("pointerup", onPointerUp);
+  document.addEventListener("pointercancel", onPointerUp);
+}
+
+function onPointerMove(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.clone) {
+    if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < 8) return;
+    const cl = drag.card.cloneNode(true);
+    cl.classList.remove("sel");
+    cl.classList.add("drag");
+    cl.style.width = drag.w + "px";
+    document.body.appendChild(cl);
+    drag.clone = cl;
+    drag.card.classList.add("ghost");
+    if (state.selCard) { state.selCard.classList.remove("sel"); state.selCard = null; }
   }
-  const L = state.selLeft;
-  if (L.dataset.idx === c.dataset.idx) {
-    const ab = ABILITIES[+L.dataset.idx];
-    [L, c].forEach(n => {
-      n.classList.remove("sel");
-      n.classList.add("matched");
-      n.style.setProperty("--c", `var(--c${ab.color})`);
-      n.style.setProperty("--cs", `var(--c${ab.color}s)`);
-      flash(n, "pop");
-    });
-    const label = c.dataset.label;
-    c.innerHTML = `<span class="tag">${ab.name}</span><div class="body">` +
-      (label ? `<span class="label">${label}：</span>` : "") + c.querySelector(".body").innerHTML + `</div>`;
-    state.matched.add(+L.dataset.idx);
-    state.selLeft = null;
+  drag.clone.style.left = (e.clientX - drag.dx) + "px";
+  drag.clone.style.top = (e.clientY - drag.dy) + "px";
+
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const slot = el && el.closest(".slot:not(.filled)");
+  if (slot !== drag.over) {
+    if (drag.over) drag.over.classList.remove("hover");
+    if (slot) slot.classList.add("hover");
+    drag.over = slot;
+  }
+  autoScroll(e.clientY);
+}
+
+function autoScroll(y) {
+  const edge = 70;
+  if (y < edge) window.scrollBy(0, -12);
+  else if (y > innerHeight - edge) window.scrollBy(0, 12);
+}
+
+function onPointerUp(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  document.removeEventListener("pointermove", onPointerMove);
+  document.removeEventListener("pointerup", onPointerUp);
+  document.removeEventListener("pointercancel", onPointerUp);
+  const d = drag;
+  drag = null;
+  if (!d.clone) { selectCard(d.card); return; }   // 沒拖動 → 當作點選
+  d.clone.remove();
+  d.card.classList.remove("ghost");
+  if (d.over) { d.over.classList.remove("hover"); tryMatch(d.card, d.over); }
+}
+
+/* ---------- 判斷配對 ---------- */
+function tryMatch(card, slot) {
+  if (slot.classList.contains("filled")) return;
+  card.classList.remove("sel");
+  state.selCard = null;
+  if (card.dataset.idx === slot.dataset.idx) {
+    const ab = ABILITIES[+slot.dataset.idx];
+    setColor(card, ab);
+    card.classList.remove("big");
+    card.classList.add("matched");
+    const label = card.dataset.label;
+    if (label) card.querySelector(".body").insertAdjacentHTML("afterbegin", `<span class="label">${label}：</span>`);
+    const drop = slot.querySelector(".drop");
+    drop.textContent = "";
+    drop.appendChild(card);
+    slot.classList.add("filled");
+    flash(slot, "pop");
+    state.matched.add(+slot.dataset.idx);
     renderInfo();
-    if (state.matched.size === 5) setTimeout(levelComplete, 450);
+    if (state.matched.size === 5) {
+      $("pool").innerHTML = `<div class="done-msg">全部配對完成！</div>`;
+      setTimeout(levelComplete, 450);
+    }
   } else {
     state.mistakes++;
-    flash(c, "wrong");
-    flash(L, "wrong");
-    L.classList.remove("sel");
-    state.selLeft = null;
+    flash(card, "wrong");
+    flash(slot, "wrong");
     renderInfo();
   }
 }
@@ -324,6 +416,7 @@ function flash(n, cls) {
   setTimeout(() => n.classList.remove(cls), 450);
 }
 
+/* ---------- 過關 ---------- */
 function levelComplete() {
   const s = starsFor(state.mistakes);
   const wasAllDone = LEVELS.every((_, i) => progress[i]);
@@ -333,8 +426,7 @@ function levelComplete() {
 
   const allDone = LEVELS.every((_, i) => progress[i]);
   const next = LEVELS.findIndex((_, i) => !progress[i]);
-  const btns = [];
-  btns.push(`<button class="btn" data-act="replay">↻ 重玩本關</button>`);
+  const btns = [`<button class="btn" data-act="replay">↻ 重玩本關</button>`];
 
   if (allDone && !wasAllDone) {
     $("mTitle").textContent = "🎉 全部過關！";
